@@ -1,40 +1,41 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { nanoid } from "nanoid";
+import { fetchContacts, addContact } from "./contactsOps";
 
 const constactsInitialState = {
-  items: [
-    { id: nanoid(), username: "Rosie Simpson", number: "459-12-56" },
-    { id: nanoid(), username: "Eden Clements", number: "645-17-79" },
-  ],
+  items: [],
+  isLoading: false,
+  error: false,
+};
+
+const handlePending = (state, action) => {
+  state.isLoading = true;
+};
+
+const handleRejected = (state, action) => {
+  state.isLoading = false;
+  state.error = action.payload;
 };
 
 const contactsSlice = createSlice({
   name: "contacts",
   initialState: constactsInitialState,
-  reducers: {
-    addContact: {
-      reducer(state, action) {
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchContacts.pending, handlePending)
+      .addCase(fetchContacts.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.error = null;
+        state.items = action.payload;
+      })
+      .addCase(fetchContacts.rejected, handleRejected)
+      .addCase(addContact.pending, handlePending)
+      .addCase(addContact.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.error = null;
         state.items.push(action.payload);
-      },
-      prepare(values) {
-        return {
-          payload: {
-            id: nanoid(),
-            username: values.username,
-            number: values.number,
-          },
-        };
-      },
-    },
-    deleteContact(state, action) {
-      const index = state.items.findIndex(
-        (contact) => contact.id === action.payload
-      );
-      state.items.splice(index, 1);
-    },
+      })
+      .addCase(addContact.rejected, handleRejected);
   },
 });
-
-export const { addContact, deleteContact } = contactsSlice.actions;
 
 export const contactsReducer = contactsSlice.reducer;

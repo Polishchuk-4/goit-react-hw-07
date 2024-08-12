@@ -13,6 +13,9 @@
   display: flex;
   align-items: center;
 }
+.contactText:not(:last-child) {
+  margin-bottom: 5px;
+}
 .contactIcon {
   margin-right: 10px;
 }

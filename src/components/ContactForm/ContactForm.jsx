@@ -2,15 +2,17 @@ import { useId } from "react";
 import { Field, Formik, Form, ErrorMessage } from "formik";
 import { nanoid } from "nanoid";
 
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import * as Yup from "yup";
 
 import style from "./ContactForm.module.css";
-import { addContact } from "../../redux/constactsSlice";
+import { addContact } from "../../redux/contactsOps";
+import toast, { Toaster } from "react-hot-toast";
+import { selectError } from "../../redux/selectors";
 
 const FeedbackSchema = Yup.object().shape({
-  username: Yup.string()
+  name: Yup.string()
     .min(2, "Too Short!")
     .max(50, "Too Long!")
     .required("Required!"),
@@ -22,18 +24,32 @@ const FeedbackSchema = Yup.object().shape({
 });
 
 const initialValues = {
-  username: "",
+  name: "",
   number: "",
 };
 
 export default function ContactForm() {
   const dispatch = useDispatch();
+  const error = useSelector(selectError);
+  console.log(error);
 
   const nameFieldId = useId();
   const numberFieldId = useId();
 
   const handleSubmit = (values, actions) => {
     dispatch(addContact(values));
+    if (error === false || error === null) {
+      toast("Successfully add contact", {
+        icon: "✅",
+        duration: 1000,
+      });
+    } else {
+      toast("Sorry, not successfully add contact", {
+        icon: "❌",
+        duration: 1000,
+      });
+    }
+
     actions.resetForm();
   };
 
@@ -50,12 +66,12 @@ export default function ContactForm() {
           </label>
           <Field
             type="text"
-            name="username"
+            name="name"
             className={style.contactFormInput}
             id={nameFieldId}
           />
           <ErrorMessage
-            name="username"
+            name="name"
             component="span"
             className={style.contactFormErrorSpan}
           />
@@ -79,6 +95,7 @@ export default function ContactForm() {
         <button type="submit" className={style.contactFormBtn}>
           Add contact
         </button>
+        <Toaster />
       </Form>
     </Formik>
   );
