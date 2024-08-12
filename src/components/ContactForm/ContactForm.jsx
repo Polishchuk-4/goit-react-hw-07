@@ -1,15 +1,12 @@
 import { useId } from "react";
 import { Field, Formik, Form, ErrorMessage } from "formik";
-import { nanoid } from "nanoid";
-
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 
 import * as Yup from "yup";
 
 import style from "./ContactForm.module.css";
 import { addContact } from "../../redux/contactsOps";
 import toast, { Toaster } from "react-hot-toast";
-import { selectError } from "../../redux/selectors";
 
 const FeedbackSchema = Yup.object().shape({
   name: Yup.string()
@@ -30,25 +27,25 @@ const initialValues = {
 
 export default function ContactForm() {
   const dispatch = useDispatch();
-  const error = useSelector(selectError);
-  console.log(error);
 
   const nameFieldId = useId();
   const numberFieldId = useId();
 
   const handleSubmit = (values, actions) => {
-    dispatch(addContact(values));
-    if (error === false || error === null) {
-      toast("Successfully add contact", {
-        icon: "✅",
-        duration: 1000,
+    dispatch(addContact(values))
+      .unwrap()
+      .then(() => {
+        toast("Successfully add contact", {
+          icon: "✅",
+          duration: 1000,
+        });
+      })
+      .catch(() => {
+        toast("Sorry, not successfully add contact", {
+          icon: "❌",
+          duration: 1000,
+        });
       });
-    } else {
-      toast("Sorry, not successfully add contact", {
-        icon: "❌",
-        duration: 1000,
-      });
-    }
 
     actions.resetForm();
   };
